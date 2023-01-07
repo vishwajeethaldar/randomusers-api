@@ -30,6 +30,7 @@ async function getUsers(gender, country, limit, page) {
 
 // add Users into database
  const addusers = async(data=[])=>{
+   
     try {
         await User.insertMany(data)
         let users = await User.find()
