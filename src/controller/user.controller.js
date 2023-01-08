@@ -42,13 +42,21 @@ async function getUsers(gender, country, limit, page) {
 
 // Delete All Users from Database
 async function delUsers() {
-    let response = await User.deleteMany({})
-    return response
+    try{
+        let response = await User.deleteMany({})
+        return response
+    }   catch(e){
+        return e.message
+    }
 }
 
 // get All users 
 async function getAllUsers (){
-    let users  = await User.find({})
-    return users
+    try{
+        let users  = await User.find({})
+        return users
+    }catch(e){
+        return e.message
+    }
 }
 module.exports = {getUsers, addusers,delUsers, getAllUsers};
