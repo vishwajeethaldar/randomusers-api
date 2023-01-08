@@ -4,9 +4,11 @@ const User = require("../model/users.model")
 async function getUsers(gender, country, limit, page) {
     let userData  = []
     let total = 0;
-    limit = limit==='undefined'?10:limit; // default limit is 10  
-    page = page!=='undefined'?page:0; // default page is 0 
+
+    limit = limit==='undefined'||!limit?10:limit; // default limit is 10  
+    page = page!=='undefined'||!page?page:0; // default page is 0 
    
+   try{
     if(gender!=="undefined"&&gender&&country!=='undefined'&&country){
         total =await (await User.find({'location.country':country, gender:gender})).length
         userData = await User.find({'location.country':country, gender:gender}).limit(limit).skip(page*limit)
@@ -25,7 +27,12 @@ async function getUsers(gender, country, limit, page) {
          userData = await User.find({}).limit(limit).skip(page*limit)
     }
     total= Math.ceil(total/10)
-    return {users:userData, totalPages:total}
+  
+    return {code:200, data:{users:userData, totalPages:total}}
+   }catch(e){
+    return {code:500, data:e.message}
+   }
+
 }
 
 // add Users into database
@@ -34,19 +41,23 @@ async function getUsers(gender, country, limit, page) {
     try {
         await User.insertMany(data)
         let users = await User.find()
-        return users
-    } catch (error) {
-        throw error
+        return {code:200, data:users}
+    } catch (e) {
+        return {code:500, data:e.message}
     }
 }
 
 // Delete All Users from Database
 async function delUsers() {
     try{
-        let response = await User.deleteMany({})
-        return response
+        let users = await User.find()
+        if(users.length===0){
+            return {code:404, msg:"Database is already empty"}
+        }
+        await User.deleteMany({})
+        return {code:200, msg:"Deleted Successfully"}
     }   catch(e){
-        return e.message
+        return {code:500, msg:e.message}
     }
 }
 
@@ -56,7 +67,7 @@ async function getAllUsers (){
         let users  = await User.find({})
         return users
     }catch(e){
-        return e.message
+        return {code:500, msg:e.message}
     }
 }
 module.exports = {getUsers, addusers,delUsers, getAllUsers};
